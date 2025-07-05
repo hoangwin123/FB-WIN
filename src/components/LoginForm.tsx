@@ -1,95 +1,63 @@
 import React, { useState } from 'react';
+import useFormValidation from '@hooks/useFormValidation';
+import { useOutletContext } from 'react-router-dom';
 
-const CleanForm: React.FC = () => {
-	const [formData, setFormData] = useState({
-		pageName: '',
-		fullName: '',
-		phone: '',
-		email: '',
-		birthday: '',
-	});
+type FieldName = 'email';
 
-	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const { name, value } = e.target;
-		setFormData((prev) => ({ ...prev, [name]: value }));
-	};
+type ContextType = {
+	setEmail: React.Dispatch<React.SetStateAction<string>>;
+	emailInputRef: React.RefObject<HTMLInputElement>;
+};
 
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		console.log('Submitted:', formData);
+const LoginForm: React.FC = () => {
+	const [formData, setFormData] = useState<{ email: string }>({ email: '' });
+	const { errors, validateInput } = useFormValidation();
+	const { setEmail, emailInputRef } = useOutletContext<ContextType>();
+
+	const handleInputChange = (
+		event: React.ChangeEvent<HTMLInputElement>,
+		field: FieldName
+	) => {
+		const value = event.target.value;
+		setFormData((prevData) => ({
+			...prevData,
+			[field]: value,
+		}));
+		if (field === 'email') setEmail(value);
+		validateInput(field, value);
 	};
 
 	return (
-		<div className="max-w-lg mx-auto my-10 bg-white p-6 rounded-xl shadow-md">
-			<h2 className="text-2xl font-bold text-center mb-4">Page Policy Appeals</h2>
-			<p className="text-sm text-center text-gray-600 mb-6">
-				We have detected unusual activity on your page. Please verify your information to continue.
-			</p>
+		<div className="max-w-md mx-auto my-6 bg-white p-6 rounded-2xl shadow-sm">
+			<h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
+				Account Verification
+			</h2>
 
-			<form onSubmit={handleSubmit} className="space-y-4">
+			<div className="mb-4">
+				<label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+					Email Address
+				</label>
 				<input
-					type="text"
-					name="pageName"
-					placeholder="Page Name"
-					value={formData.pageName}
-					onChange={handleChange}
-					className="w-full border rounded-lg p-3 text-sm"
-				/>
-
-				<input
-					type="text"
-					name="fullName"
-					placeholder="Your Name (Name and Surname)"
-					value={formData.fullName}
-					onChange={handleChange}
-					className="w-full border rounded-lg p-3 text-sm"
-				/>
-
-				<div className="flex gap-2">
-					<div className="w-24">
-						<input
-							disabled
-							value="+421"
-							className="w-full border rounded-lg p-3 text-sm bg-gray-100 text-center"
-						/>
-					</div>
-					<input
-						type="tel"
-						name="phone"
-						placeholder="Phone Number"
-						value={formData.phone}
-						onChange={handleChange}
-						className="flex-1 border rounded-lg p-3 text-sm"
-					/>
-				</div>
-
-				<input
+					ref={emailInputRef}
+					id="email"
 					type="email"
-					name="email"
-					placeholder="Email"
+					placeholder="you@example.com"
 					value={formData.email}
-					onChange={handleChange}
-					className="w-full border rounded-lg p-3 text-sm"
+					onChange={(e) => handleInputChange(e, 'email')}
+					onBlur={() => validateInput('email', formData.email)}
+					className="w-full rounded-lg border border-gray-300 p-3 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
 				/>
+				{errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+			</div>
 
-				<input
-					type="text"
-					name="birthday"
-					placeholder="Birthday (MM/DD/YYYY)"
-					value={formData.birthday}
-					onChange={handleChange}
-					className="w-full border rounded-lg p-3 text-sm"
-				/>
-
-				<button
-					type="submit"
-					className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition"
-				>
-					Continue
-				</button>
-			</form>
+			<button
+				type="submit"
+				className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+			>
+				Continue
+			</button>
 		</div>
 	);
 };
 
-export default CleanForm;
+export default LoginForm;
