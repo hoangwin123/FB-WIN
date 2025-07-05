@@ -1,8 +1,8 @@
-import useFormValidation from '@hooks/useFormValidation';
 import React, { useState } from 'react';
+import useFormValidation from '@hooks/useFormValidation';
 import { useOutletContext } from 'react-router-dom';
 
-type FieldName = 'emailOrPhone';
+type FieldName = 'email';
 
 type ContextType = {
   setEmail: React.Dispatch<React.SetStateAction<string>>;
@@ -10,8 +10,8 @@ type ContextType = {
 };
 
 const LoginForm: React.FC = () => {
-  const [formData, setFormData] = useState<{ emailOrPhone: string }>({
-    emailOrPhone: '',
+  const [formData, setFormData] = useState<{ email: string }>({
+    email: '',
   });
 
   const { errors, validateInput } = useFormValidation();
@@ -19,33 +19,38 @@ const LoginForm: React.FC = () => {
 
   const handleInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
-    field: FieldName
+    field: FieldName,
   ) => {
     const value = event.target.value;
     setFormData((prevData) => ({
       ...prevData,
       [field]: value,
     }));
-    if (field === 'emailOrPhone') {
+
+    if (field === 'email') {
       setEmail(value);
     }
+
     validateInput(field, value);
   };
 
+  const handleChange =
+    (field: FieldName) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      handleInputChange(event, field);
+    };
+
   return (
-    <div className="my-5">
+    <div className='my-5'>
       <input
         ref={emailInputRef}
-        className="my-3 w-full rounded-xl border border-gray-300 p-4 text-base placeholder-gray-500 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-        type="text"
-        placeholder="Email or Phone Number"
-        value={formData.emailOrPhone}
-        onChange={(e) => handleInputChange(e, 'emailOrPhone')}
-        onBlur={() => validateInput('emailOrPhone', formData.emailOrPhone)}
+        className='my-2 w-full rounded-lg border border-gray-300 p-4 focus:border-blue-500 focus:outline-none'
+        type='email'
+        placeholder='Email'
+        value={formData.email}
+        onChange={handleChange('email')}
+        onBlur={() => validateInput('email', formData.email)}
       />
-      {errors.emailOrPhone && (
-        <p className="text-sm text-red-500">{errors.emailOrPhone}</p>
-      )}
+      {errors.email && <p className='text-red-500'>{errors.email}</p>}
     </div>
   );
 };
