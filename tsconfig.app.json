@@ -1,34 +1,59 @@
 {
 	"compilerOptions": {
-		/* Basic Options */
-		"target": "ES2020",
-		"useDefineForClassFields": true,
-		"lib": ["ES2020", "DOM", "DOM.Iterable"],
-		"module": "ESNext",
+		"allowImportingTsExtensions": true,
+		/* Advanced Options */
+		"baseUrl": "./",
+		"isolatedModules": true,
 		"jsx": "react-jsx",
-		"noEmit": true,
+		"lib": [
+			"ES2020",
+			"DOM",
+			"DOM.Iterable"
+		],
+		"module": "ESNext",
+		"moduleDetection": "force",
 		/* Bundler Mode */
 		"moduleResolution": "bundler",
-		"allowImportingTsExtensions": true,
-		"isolatedModules": true,
-		"moduleDetection": "force",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"paths": {
+			"@assets/*": [
+				"src/assets/*"
+			],
+			"@components/*": [
+				"src/components/*"
+			],
+			"@hooks/*": [
+				"src/hooks/*"
+			],
+			"@layouts/*": [
+				"src/layouts/*"
+			],
+			"@pages/*": [
+				"src/pages/*"
+			],
+			"@public/*": [
+				"public/*"
+			],
+			"@utils/*": [
+				"src/utils/*"
+			]
+		},
 		"skipLibCheck": true,
 		/* Linting Options */
 		"strict": true,
-		"noUnusedLocals": true,
-		"noUnusedParameters": true,
-		"noFallthroughCasesInSwitch": true,
-		/* Advanced Options */
-		"baseUrl": "./",
-		"paths": {
-			"@assets/*": ["src/assets/*"],
-			"@components/*": ["src/components/*"],
-			"@pages/*": ["src/pages/*"],
-			"@public/*": ["public/*"],
-			"@utils/*": ["src/utils/*"],
-			"@hooks/*": ["src/hooks/*"]
-		}
+		/* Basic Options */
+		"target": "ES2020",
+		"useDefineForClassFields": true
 	},
-	"include": ["src", "public"],
-	"exclude": ["node_modules", "dist"]
+	"exclude": [
+		"node_modules",
+		"dist"
+	],
+	"include": [
+		"src",
+		"public"
+	]
 }

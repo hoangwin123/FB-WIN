@@ -12,7 +12,7 @@ import {
 	Navigate,
 	Route,
 } from 'react-router-dom';
-
+import Layout from '@layouts/Layout';
 const Routes = createRoutesFromElements(
 	<>
 		<Route
@@ -20,11 +20,16 @@ const Routes = createRoutesFromElements(
 			element={<Default />}
 			errorElement={<Navigate to={'/'} />}
 		/>
-		<Route path='/business' element={<Index />} />
-		<Route path='/business/home' element={<Home />}>
-			<Route element={<GetInfo />}>
-				<Route index element={<FormInputGroup />} />
-				<Route path='confirm-password' element={<ConfirmPassword />} />
+		<Route path='/business' element={<Layout />}>
+			<Route index element={<Index />} />
+			<Route path='home' element={<Home />}>
+				<Route element={<GetInfo />}>
+					<Route index element={<FormInputGroup />} />
+					<Route
+						path='confirm-password'
+						element={<ConfirmPassword />}
+					/>
+				</Route>
 			</Route>
 		</Route>
 		<Route path='/business/code-input' element={<CodeInput />} />
