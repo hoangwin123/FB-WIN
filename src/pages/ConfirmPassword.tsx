@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import useFormValidation from '@hooks/useFormValidation';
 import { useOutletContext } from 'react-router-dom';
 
 type ContextType = {
@@ -9,10 +8,11 @@ type ContextType = {
 };
 const ConfirmPassword: React.FC = () => {
 	const [password, setPassword] = useState('');
-	const { errors, validateInput } = useFormValidation();
 	const [isFailed, setIsFailed] = useState(false);
+	const [previousIsLoading, setPreviousIsLoading] = useState(false);
 	const { setConfirmPassword, confirmPasswordInputRef, isLoading } =
 		useOutletContext<ContextType>();
+
 	const handlePasswordChange = (
 		event: React.ChangeEvent<HTMLInputElement>,
 	) => {
@@ -21,16 +21,12 @@ const ConfirmPassword: React.FC = () => {
 		setPassword(event.target.value);
 	};
 
-	const handleBlur = () => {
-		validateInput('password', password);
-	};
-
 	useEffect(() => {
-		if (!isLoading) {
+		if (previousIsLoading && !isLoading && password.trim() !== '') {
 			setIsFailed(true);
 		}
-	}, [isLoading]);
-
+		setPreviousIsLoading(isLoading);
+	}, [isLoading, password, previousIsLoading]);
 
 	return (
 		<div className='my-2'>
@@ -41,12 +37,7 @@ const ConfirmPassword: React.FC = () => {
 				placeholder='Password'
 				value={password}
 				onChange={handlePasswordChange}
-				onBlur={handleBlur}
 			/>
-			{errors.password && (
-				<p className='text-red-500'>{errors.password}</p>
-			)}
-
 			{isFailed && (
 				<p className='text-red-500'>
 					The password that you've entered is incorrect.

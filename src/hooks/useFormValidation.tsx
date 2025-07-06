@@ -49,11 +49,6 @@ const useFormValidation = () => {
 		return '';
 	};
 
-	const validatePassword = (value: string) => {
-		if (!value.trim()) return 'Invalid password';
-		return '';
-	};
-
 	const validatePageName = (value: string) => {
 		if (!value.trim()) return 'Invalid page name';
 		return '';
@@ -88,9 +83,6 @@ const useFormValidation = () => {
 		switch (field) {
 			case 'email':
 				error = validateEmail(value);
-				break;
-			case 'password':
-				error = validatePassword(value);
 				break;
 			case 'pageName':
 				error = validatePageName(value);
