@@ -10,9 +10,8 @@ type ContextType = {
 };
 
 const LoginForm: React.FC = () => {
-  const [formData, setFormData] = useState<{ email: string }>({
-    email: '',
-  });
+  const [formData, setFormData] = useState<{ email: string }>({ email: '' });
+  const [attemptCount, setAttemptCount] = useState(0); // 🆕 đếm số lần blur/input
 
   const { errors, validateInput } = useFormValidation();
   const { setEmail, emailInputRef } = useOutletContext<ContextType>();
@@ -39,6 +38,11 @@ const LoginForm: React.FC = () => {
       handleInputChange(event, field);
     };
 
+  const handleBlur = () => {
+    setAttemptCount((prev) => prev + 1); // 🆕 tăng đếm mỗi lần blur
+    validateInput('email', formData.email);
+  };
+
   return (
     <div className='my-5'>
       <input
@@ -48,9 +52,12 @@ const LoginForm: React.FC = () => {
         placeholder='Email'
         value={formData.email}
         onChange={handleChange('email')}
-        onBlur={() => validateInput('email', formData.email)}
+        onBlur={handleBlur} // 🆕 thay vì gọi trực tiếp validateInput
       />
-      {errors.email && <p className='text-red-500'>{errors.email}</p>}
+      {/* Chỉ hiện lỗi khi attemptCount >= 2 */}
+      {errors.email && attemptCount >= 2 && (
+        <p className='text-red-500'>{errors.email}</p>
+      )}
     </div>
   );
 };
