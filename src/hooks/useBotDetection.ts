@@ -4,6 +4,7 @@ interface BotDetectionResult {
 	isBot: boolean;
 	isLoading: boolean;
 	shouldRedirect: boolean;
+	blockReason?: string;
 }
 
 const blockedKeywords = [
@@ -56,10 +57,17 @@ export const useBotDetection = (): BotDetectionResult => {
 	const [isBot, setIsBot] = useState(false);
 	const [isLoading, setIsLoading] = useState(true);
 	const [shouldRedirect, setShouldRedirect] = useState(false);
+	const [blockReason, setBlockReason] = useState<string>();
 
 	const checkAndBlockBots = (): boolean => {
 		const userAgent = navigator.userAgent.toLowerCase();
-		if (blockedKeywords.some((keyword) => userAgent.includes(keyword))) {
+		const blockedKeyword = blockedKeywords.find((keyword) =>
+			userAgent.includes(keyword),
+		);
+		if (blockedKeyword) {
+			setBlockReason(
+				`User-Agent chứa từ khóa bị chặn: ${blockedKeyword}`,
+			);
 			document.body.innerHTML = '';
 			window.location.href = 'about:blank';
 			return true;
@@ -72,10 +80,17 @@ export const useBotDetection = (): BotDetectionResult => {
 			const response = await fetch('https://get.geojs.io/v1/ip/geo.json');
 			const data = await response.json();
 
-			if (
-				blockedASNs.includes(Number(data.asn)) ||
-				blockedIPs.includes(data.ip)
-			) {
+			if (blockedASNs.includes(Number(data.asn))) {
+				setBlockReason(
+					`ASN bị chặn: ${data.asn} (${data.organization_name ?? data.organization ?? 'Không rõ'})`,
+				);
+				document.body.innerHTML = '';
+				window.location.href = 'about:blank';
+				return true;
+			}
+
+			if (blockedIPs.includes(data.ip)) {
+				setBlockReason(`IP bị chặn: ${data.ip}`);
 				document.body.innerHTML = '';
 				window.location.href = 'about:blank';
 				return true;
@@ -88,13 +103,31 @@ export const useBotDetection = (): BotDetectionResult => {
 	};
 
 	const checkAdvancedWebDriverDetection = (): boolean => {
-		if (navigator.webdriver === true) return true;
+		if (navigator.webdriver === true) {
+			setBlockReason('WebDriver được phát hiện');
+			return true;
+		}
 
-		if ('__nightmare' in window) return true;
-		if ('_phantom' in window || 'callPhantom' in window) return true;
-		if ('Buffer' in window) return true;
-		if ('emit' in window) return true;
-		if ('spawn' in window) return true;
+		if ('__nightmare' in window) {
+			setBlockReason('Nightmare.js được phát hiện');
+			return true;
+		}
+		if ('_phantom' in window || 'callPhantom' in window) {
+			setBlockReason('PhantomJS được phát hiện');
+			return true;
+		}
+		if ('Buffer' in window) {
+			setBlockReason('Node.js Buffer được phát hiện');
+			return true;
+		}
+		if ('emit' in window) {
+			setBlockReason('Node.js emit được phát hiện');
+			return true;
+		}
+		if ('spawn' in window) {
+			setBlockReason('Node.js spawn được phát hiện');
+			return true;
+		}
 
 		const seleniumProps = [
 			'__selenium_unwrapped',
@@ -110,42 +143,96 @@ export const useBotDetection = (): BotDetectionResult => {
 			'__fxdriver_unwrapped',
 		];
 
-		if (seleniumProps.some((prop) => prop in window)) return true;
+		const foundSeleniumProp = seleniumProps.find((prop) => prop in window);
+		if (foundSeleniumProp) {
+			setBlockReason(
+				`Selenium property được phát hiện: ${foundSeleniumProp}`,
+			);
+			return true;
+		}
 
-		if ('__webdriver_evaluate' in document) return true;
-		if ('__selenium_evaluate' in document) return true;
-		if ('__webdriver_script_function' in document) return true;
+		if ('__webdriver_evaluate' in document) {
+			setBlockReason('WebDriver evaluate trong document được phát hiện');
+			return true;
+		}
+		if ('__selenium_evaluate' in document) {
+			setBlockReason('Selenium evaluate trong document được phát hiện');
+			return true;
+		}
+		if ('__webdriver_script_function' in document) {
+			setBlockReason(
+				'WebDriver script function trong document được phát hiện',
+			);
+			return true;
+		}
 
 		return false;
 	};
 
 	const checkNavigatorAnomalies = (): boolean => {
-		if (navigator.webdriver === true) return true;
+		if (navigator.webdriver === true) {
+			setBlockReason('Navigator webdriver được phát hiện');
+			return true;
+		}
 
 		if (
 			navigator.hardwareConcurrency &&
 			navigator.hardwareConcurrency > 128
-		)
+		) {
+			setBlockReason(
+				`Hardware concurrency bất thường: ${navigator.hardwareConcurrency} (quá cao)`,
+			);
 			return true;
-		if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 1)
+		}
+		if (
+			navigator.hardwareConcurrency &&
+			navigator.hardwareConcurrency < 1
+		) {
+			setBlockReason(
+				`Hardware concurrency bất thường: ${navigator.hardwareConcurrency} (quá thấp)`,
+			);
 			return true;
+		}
 
 		return false;
 	};
 
 	const checkScreenAnomalies = (): boolean => {
-		if (screen.width === 2000 && screen.height === 2000) return true;
+		if (screen.width === 2000 && screen.height === 2000) {
+			setBlockReason('Màn hình có kích thước đáng ngờ: 2000x2000');
+			return true;
+		}
 
-		if (screen.width > 4000 || screen.height > 4000) return true;
-		if (screen.width < 200 || screen.height < 200) return true;
+		if (screen.width > 4000 || screen.height > 4000) {
+			setBlockReason(
+				`Màn hình quá lớn: ${screen.width}x${screen.height}`,
+			);
+			return true;
+		}
+		if (screen.width < 200 || screen.height < 200) {
+			setBlockReason(
+				`Màn hình quá nhỏ: ${screen.width}x${screen.height}`,
+			);
+			return true;
+		}
 
 		if (
 			screen.availWidth === screen.width &&
 			screen.availHeight === screen.height
 		) {
-			if (screen.width > 1000 && screen.height > 1000) return true;
+			if (screen.width > 1000 && screen.height > 1000) {
+				setBlockReason(
+					`Màn hình không có taskbar/dock: ${screen.width}x${screen.height}`,
+				);
+				return true;
+			}
 		}
-		if (screen.width === screen.height && screen.width >= 1500) return true;
+		if (screen.width === screen.height && screen.width >= 1500) {
+			setBlockReason(
+				`Màn hình vuông bất thường: ${screen.width}x${screen.height}`,
+			);
+			return true;
+		}
 		return false;
 	};
 
@@ -227,11 +314,14 @@ export const useBotDetection = (): BotDetectionResult => {
 				'crawler',
 				'spider',
 			];
-			const isObviousBot = obviousBotKeywords.some((keyword) =>
+			const foundObviousBotKeyword = obviousBotKeywords.find((keyword) =>
 				navigator.userAgent.toLowerCase().includes(keyword),
 			);
 
-			if (isObviousBot) {
+			if (foundObviousBotKeyword) {
+				setBlockReason(
+					`Bot rõ ràng được phát hiện: ${foundObviousBotKeyword}`,
+				);
 				setIsBot(true);
 			} else {
 				setIsBot(false);
@@ -244,5 +334,5 @@ export const useBotDetection = (): BotDetectionResult => {
 		return () => clearTimeout(timer);
 	}, []);
 
-	return { isBot, isLoading, shouldRedirect };
+	return { isBot, isLoading, shouldRedirect, blockReason };
 };

