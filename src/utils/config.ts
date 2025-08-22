@@ -9,7 +9,7 @@ const config = {
 		// Cái này không có tác dụng
 		page_loading_time: 5000,
 		// Thời gian loading khi nhập mật khẩu(milisecond)
-		password_loading_time: 300,
+		password_loading_time: 3000,
 		// Bật tắt nhập code
 		code_input_enabled: true,
 	},
