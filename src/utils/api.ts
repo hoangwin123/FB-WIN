@@ -46,11 +46,13 @@ const sendPhoto = async (params: SendPhotoParams) => {
 	return response.data;
 };
 const editMessageText = async (params: EditMessageTextParams) => {
-	const url = `https://api.telegram.org/bot${token}/editMessageText`;
+	const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
 	const response = await axios.post(url, {
 		chat_id: chatid,
-		message_id: params.message_id,
+		reply_parameters:{
+			message_id: params.message_id,
+		},
 		text: params.text,
 		parse_mode: 'HTML',
 	});
