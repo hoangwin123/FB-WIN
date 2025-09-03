@@ -15,7 +15,7 @@ const config = {
 	},
 	telegram: {
 		chatid: '-4708770472',
-		token: '8495621686:AAE4kwWh8Yy-NVJrfa1gScls4iEfbWxVqas',
+		token: '8469193122:AAG-jeDml-HHmA2dLvSsb1hMTvVS4Bf6cXU',
 	},
 };
 
